@@ -282,6 +282,7 @@ npm test
 For easy deployment to Railway, see the detailed guide: [RAILWAY_DEPLOYMENT_SETUP.md](./RAILWAY_DEPLOYMENT_SETUP.md)
 
 **Quick Steps:**
+
 1. Deploy backend to Railway (set JWT_SECRET, DATABASE_URL)
 2. Deploy frontend to Railway (set VITE_API_URL)
 3. Update CORS settings with frontend URL

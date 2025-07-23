@@ -7,28 +7,28 @@ const getApiBaseUrl = () => {
   if (import.meta.env.DEV) {
     return "http://localhost:3001/api";
   }
-  
+
   // In production, use the environment variable or try to detect Railway URL
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
   if (envUrl) {
     return envUrl;
   }
-  
+
   // Fallback: try to construct Railway URL based on current domain
   const currentDomain = window.location.hostname;
-  if (currentDomain.includes('railway.app')) {
+  if (currentDomain.includes("railway.app")) {
     // Replace frontend domain with backend domain pattern
-    const backendDomain = currentDomain.replace('-frontend-', '-backend-');
+    const backendDomain = currentDomain.replace("-frontend-", "-backend-");
     return `https://${backendDomain}/api`;
   }
-  
+
   // Final fallback
   return "http://localhost:3001/api";
 };
 
 const API_BASE_URL = getApiBaseUrl();
 
-console.log('API Base URL:', API_BASE_URL); // For debugging
+console.log("API Base URL:", API_BASE_URL); // For debugging
 
 // Create axios instance
 const api = axios.create({
