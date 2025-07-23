@@ -1,110 +1,119 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import { PrismaClient } from "../generated/prisma";
+import helmet from "helmet";
+import compression from "compression";
+import rateLimit from "express-rate-limit";
+import morgan from "morgan";
 import * as dotenv from "dotenv";
+
+// Import routes
+import { userRoutes } from "./routes/userRoutes";
+import { bookRoutes } from "./routes/bookRoutes";
+import { reviewRoutes } from "./routes/reviewRoutes";
+import authRoutes from "./routes/authRoutes";
+
+// Import middleware
+import { globalErrorHandler, notFoundHandler } from "./middleware/errorHandler";
+import { disconnectDatabase } from "./config/database";
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Security middleware
+app.use(helmet());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: {
+    error: "Too many requests from this IP, please try again later.",
+  },
+});
+app.use(limiter);
+
+// Logging middleware
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+
+// Body parsing middleware
+app.use(compression());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Health check route
 app.get("/", (req: Request, res: Response) => {
   res.json({
-    message: "Book Review Platform API is running!",
+    message: "📚 Book Review Platform API is running!",
+    version: "2.0.0",
+    environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
+    endpoints: {
+      auth: "/api/auth",
+      users: "/api/users",
+      books: "/api/books",
+      reviews: "/api/reviews",
+    },
   });
 });
 
-// Users routes
-app.get("/api/users", async (req: Request, res: Response) => {
-  try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-        _count: {
-          select: { reviews: true },
-        },
-      },
-    });
-    res.json(users);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Failed to fetch users" });
-  }
+// API status endpoint
+app.get("/api/health", (req: Request, res: Response) => {
+  res.json({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+  });
 });
 
-// Books routes
-app.get("/api/books", async (req: Request, res: Response) => {
-  try {
-    const books = await prisma.book.findMany({
-      include: {
-        reviews: {
-          include: {
-            user: {
-              select: { name: true, email: true },
-            },
-          },
-        },
-      },
-    });
-    res.json(books);
-  } catch (error) {
-    console.error("Error fetching books:", error);
-    res.status(500).json({ error: "Failed to fetch books" });
-  }
-});
+// API routes
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/books", bookRoutes);
+app.use("/api/reviews", reviewRoutes);
 
-// Reviews routes
-app.get("/api/reviews", async (req: Request, res: Response) => {
-  try {
-    const reviews = await prisma.review.findMany({
-      include: {
-        book: {
-          select: { title: true, author: true },
-        },
-        user: {
-          select: { name: true, email: true },
-        },
-      },
-    });
-    res.json(reviews);
-  } catch (error) {
-    console.error("Error fetching reviews:", error);
-    res.status(500).json({ error: "Failed to fetch reviews" });
-  }
-});
+// 404 handler - must be after all routes
+app.use("*", notFoundHandler);
 
-// Error handling middleware
-app.use((err: Error, req: Request, res: Response, next: any) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Something went wrong!" });
-});
-
-// 404 handler
-app.use("*", (req: Request, res: Response) => {
-  res.status(404).json({ error: "Route not found" });
-});
+// Global error handler - must be last
+app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📚 Book Review Platform API`);
+  console.log(`📚 Book Review Platform API v2.0.0`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`📋 API Documentation: http://localhost:${PORT}`);
 });
 
-// Graceful shutdown
-process.on("SIGTERM", async () => {
-  console.log("SIGTERM received, shutting down gracefully");
-  await prisma.$disconnect();
-  process.exit(0);
-});
+// Graceful shutdown handling
+const gracefulShutdown = async (signal: string) => {
+  console.log(`\n${signal} received, shutting down gracefully...`);
+
+  server.close(() => {
+    console.log("HTTP server closed");
+  });
+
+  try {
+    await disconnectDatabase();
+    console.log("Database connection closed");
+    process.exit(0);
+  } catch (error) {
+    console.error("Error during shutdown:", error);
+    process.exit(1);
+  }
+};
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
+export default app;

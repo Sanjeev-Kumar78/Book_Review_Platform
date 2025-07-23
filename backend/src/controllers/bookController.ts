@@ -1,0 +1,238 @@
+// src/controllers/bookController.ts
+import { Request, Response } from "express";
+import { prisma } from "../config/database";
+import { handleAsyncError, createError } from "../middleware/errorHandler";
+
+export const getAllBooks = handleAsyncError(
+  async (req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    const genre = req.query.genre as string;
+
+    const where = genre ? { genre: { has: genre } } : {};
+
+    const [books, total] = await Promise.all([
+      prisma.book.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          reviews: {
+            include: {
+              user: {
+                select: { name: true, email: true },
+              },
+            },
+          },
+          _count: {
+            select: { reviews: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.book.count({ where }),
+    ]);
+
+    // Calculate average rating for each book
+    const booksWithRating = books.map((book) => {
+      const avgRating =
+        book.reviews.length > 0
+          ? book.reviews.reduce((sum, review) => sum + review.rating, 0) /
+            book.reviews.length
+          : 0;
+
+      return {
+        ...book,
+        averageRating: Math.round(avgRating * 10) / 10,
+      };
+    });
+
+    res.json({
+      data: booksWithRating,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  }
+);
+
+export const getBookById = handleAsyncError(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const book = await prisma.book.findUnique({
+      where: { id },
+      include: {
+        reviews: {
+          include: {
+            user: {
+              select: { name: true, email: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+
+    if (!book) {
+      throw createError("Book not found", 404);
+    }
+
+    // Calculate average rating
+    const avgRating =
+      book.reviews.length > 0
+        ? book.reviews.reduce((sum, review) => sum + review.rating, 0) /
+          book.reviews.length
+        : 0;
+
+    res.json({
+      data: {
+        ...book,
+        averageRating: Math.round(avgRating * 10) / 10,
+      },
+    });
+  }
+);
+
+export const createBook = handleAsyncError(
+  async (req: Request, res: Response) => {
+    const { title, author, genre, published } = req.body;
+
+    const book = await prisma.book.create({
+      data: {
+        title,
+        author,
+        genre,
+        published: new Date(published),
+      },
+      include: {
+        _count: {
+          select: { reviews: true },
+        },
+      },
+    });
+
+    res.status(201).json({
+      message: "Book created successfully",
+      data: book,
+    });
+  }
+);
+
+export const updateBook = handleAsyncError(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    if (updateData.published) {
+      updateData.published = new Date(updateData.published);
+    }
+
+    const book = await prisma.book.update({
+      where: { id },
+      data: updateData,
+      include: {
+        _count: {
+          select: { reviews: true },
+        },
+      },
+    });
+
+    res.json({
+      message: "Book updated successfully",
+      data: book,
+    });
+  }
+);
+
+export const deleteBook = handleAsyncError(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    await prisma.book.delete({
+      where: { id },
+    });
+
+    res.json({ message: "Book deleted successfully" });
+  }
+);
+
+export const searchBooks = handleAsyncError(
+  async (req: Request, res: Response) => {
+    const { q: query } = req.query;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    if (!query) {
+      throw createError("Search query is required", 400);
+    }
+
+    const books = await prisma.book.findMany({
+      where: {
+        OR: [
+          { title: { contains: query as string, mode: "insensitive" } },
+          { author: { contains: query as string, mode: "insensitive" } },
+          { genre: { has: query as string } },
+        ],
+      },
+      skip,
+      take: limit,
+      include: {
+        _count: {
+          select: { reviews: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Calculate average rating for each book
+    const booksWithRating = await Promise.all(
+      books.map(async (book) => {
+        const reviews = await prisma.review.findMany({
+          where: { bookId: book.id },
+        });
+
+        const avgRating =
+          reviews.length > 0
+            ? reviews.reduce((sum, review) => sum + review.rating, 0) /
+              reviews.length
+            : 0;
+
+        return {
+          ...book,
+          averageRating: Math.round(avgRating * 10) / 10,
+        };
+      })
+    );
+
+    res.json({ data: booksWithRating });
+  }
+);
+
+export const getBooksByGenre = handleAsyncError(
+  async (req: Request, res: Response) => {
+    const genres = await prisma.book.findMany({
+      select: { genre: true },
+      distinct: ["genre"],
+    });
+
+    // Flatten and count genres
+    const genreCount: { [key: string]: number } = {};
+    genres.forEach((book) => {
+      book.genre.forEach((g) => {
+        genreCount[g] = (genreCount[g] || 0) + 1;
+      });
+    });
+
+    const sortedGenres = Object.entries(genreCount)
+      .map(([genre, count]) => ({ genre, count }))
+      .sort((a, b) => b.count - a.count);
+
+    res.json({ data: sortedGenres });
+  }
+);
