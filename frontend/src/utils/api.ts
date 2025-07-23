@@ -1,7 +1,34 @@
 // src/utils/api.ts
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:3001/api";
+// Determine the API base URL based on environment
+const getApiBaseUrl = () => {
+  // If we're in development mode, use localhost
+  if (import.meta.env.DEV) {
+    return "http://localhost:3001/api";
+  }
+  
+  // In production, use the environment variable or try to detect Railway URL
+  const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+  if (envUrl) {
+    return envUrl;
+  }
+  
+  // Fallback: try to construct Railway URL based on current domain
+  const currentDomain = window.location.hostname;
+  if (currentDomain.includes('railway.app')) {
+    // Replace frontend domain with backend domain pattern
+    const backendDomain = currentDomain.replace('-frontend-', '-backend-');
+    return `https://${backendDomain}/api`;
+  }
+  
+  // Final fallback
+  return "http://localhost:3001/api";
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+console.log('API Base URL:', API_BASE_URL); // For debugging
 
 // Create axios instance
 const api = axios.create({
@@ -9,6 +36,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 10000, // 10 seconds timeout
 });
 
 // Add auth token to requests
@@ -25,7 +53,7 @@ api.interceptors.request.use(
   }
 );
 
-// Handle auth errors
+// Handle auth errors and network issues
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -33,6 +61,10 @@ api.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";
+    } else if (error.code === "ECONNABORTED") {
+      console.error("Request timeout");
+    } else if (!error.response) {
+      console.error("Network error - please check your connection");
     }
     return Promise.reject(error);
   }

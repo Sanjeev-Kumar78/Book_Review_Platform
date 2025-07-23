@@ -8,6 +8,7 @@ import {
   deleteBook,
   searchBooks,
   getBooksByGenre,
+  getBookReviews,
 } from "../controllers/bookController";
 import {
   validateCreateBook,
@@ -45,6 +46,13 @@ router.get("/genres", getBooksByGenre);
  * @access  Public
  */
 router.get("/:id", getBookById);
+
+/**
+ * @route   GET /api/books/:id/reviews
+ * @desc    Get reviews for a specific book
+ * @access  Public
+ */
+router.get("/:id/reviews", validatePagination, getBookReviews);
 
 /**
  * @route   POST /api/books

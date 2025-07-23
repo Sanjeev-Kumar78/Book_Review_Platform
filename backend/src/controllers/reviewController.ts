@@ -71,7 +71,8 @@ export const getReviewById = handleAsyncError(
 
 export const createReview = handleAsyncError(
   async (req: Request, res: Response) => {
-    const { bookId, userId, rating, comment } = req.body;
+    const { bookId, rating, comment } = req.body;
+    const userId = (req as any).user.id; // Get user ID from authenticated user
 
     // Check if user already reviewed this book
     const existingReview = await prisma.review.findFirst({
@@ -79,21 +80,14 @@ export const createReview = handleAsyncError(
     });
 
     if (existingReview) {
-      throw createError("User has already reviewed this book", 409);
+      throw createError("You have already reviewed this book", 409);
     }
 
-    // Verify book and user exist
-    const [book, user] = await Promise.all([
-      prisma.book.findUnique({ where: { id: bookId } }),
-      prisma.user.findUnique({ where: { id: userId } }),
-    ]);
+    // Verify book exists
+    const book = await prisma.book.findUnique({ where: { id: bookId } });
 
     if (!book) {
       throw createError("Book not found", 404);
-    }
-
-    if (!user) {
-      throw createError("User not found", 404);
     }
 
     const review = await prisma.review.create({
@@ -108,7 +102,12 @@ export const createReview = handleAsyncError(
           select: { title: true, author: true },
         },
         user: {
-          select: { name: true, email: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true,
+          },
         },
       },
     });
@@ -124,6 +123,21 @@ export const updateReview = handleAsyncError(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const { rating, comment } = req.body;
+    const userId = (req as any).user.id; // Get user ID from authenticated user
+
+    // First, check if the review exists and belongs to the user
+    const existingReview = await prisma.review.findUnique({
+      where: { id },
+      select: { userId: true, bookId: true },
+    });
+
+    if (!existingReview) {
+      throw createError("Review not found", 404);
+    }
+
+    if (existingReview.userId !== userId) {
+      throw createError("You can only update your own reviews", 403);
+    }
 
     const review = await prisma.review.update({
       where: { id },
@@ -133,7 +147,12 @@ export const updateReview = handleAsyncError(
           select: { title: true, author: true },
         },
         user: {
-          select: { name: true, email: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true,
+          },
         },
       },
     });
@@ -148,12 +167,84 @@ export const updateReview = handleAsyncError(
 export const deleteReview = handleAsyncError(
   async (req: Request, res: Response) => {
     const { id } = req.params;
+    const userId = (req as any).user.id; // Get user ID from authenticated user
+
+    // First, check if the review exists and belongs to the user
+    const existingReview = await prisma.review.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+
+    if (!existingReview) {
+      throw createError("Review not found", 404);
+    }
+
+    if (existingReview.userId !== userId) {
+      throw createError("You can only delete your own reviews", 403);
+    }
 
     await prisma.review.delete({
       where: { id },
     });
 
     res.json({ message: "Review deleted successfully" });
+  }
+);
+
+export const getMyReviews = handleAsyncError(
+  async (req: Request, res: Response) => {
+    const userId = (req as any).user.id; // Get user ID from authenticated user
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const [reviews, total] = await Promise.all([
+      prisma.review.findMany({
+        where: { userId },
+        skip,
+        take: limit,
+        include: {
+          book: {
+            select: {
+              id: true,
+              title: true,
+              author: true,
+              genre: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.review.count({
+        where: { userId },
+      }),
+    ]);
+
+    // Calculate user's average rating
+    const avgRatingResult = await prisma.review.aggregate({
+      where: { userId },
+      _avg: {
+        rating: true,
+      },
+    });
+
+    const averageRating = avgRatingResult._avg.rating
+      ? Math.round(avgRatingResult._avg.rating * 10) / 10
+      : 0;
+
+    res.json({
+      data: reviews,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+      stats: {
+        totalReviews: total,
+        averageRating,
+      },
+    });
   }
 );
 

@@ -4,6 +4,7 @@ import Signup from "./components/Signup";
 import Login from "./components/Login";
 import Books from "./components/Books";
 import AddBook from "./components/AddBook";
+import BookDetail from "./components/BookDetail";
 import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -57,14 +58,21 @@ const App = () => {
           }
         />
         <Route
+          path="/books/:id"
+          element={
+            <ProtectedRoute>
+              <BookDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/add_book"
           element={
             <ProtectedRoute>
               <AddBook />
             </ProtectedRoute>
           }
-        />
-
+        />{" "}
         <Route
           path="*"
           element={

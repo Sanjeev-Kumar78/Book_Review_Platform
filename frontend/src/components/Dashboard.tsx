@@ -1,6 +1,7 @@
 // src/components/Dashboard.tsx
 import React from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -56,17 +57,32 @@ const Dashboard: React.FC = () => {
           <div className="space-y-6">
             <div>
               <h3 className="text-xl font-semibold mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button className="bg-blue-600 hover:bg-blue-700 p-4 rounded-lg text-left transition-colors">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Link
+                  to="/add_book"
+                  className="bg-blue-600 hover:bg-blue-700 p-4 rounded-lg text-left transition-colors"
+                >
                   <h4 className="font-semibold mb-2">Add New Book</h4>
                   <p className="text-gray-300">
                     Add a new book to the platform
                   </p>
-                </button>
-                <button className="bg-green-600 hover:bg-green-700 p-4 rounded-lg text-left transition-colors">
+                </Link>
+                <Link
+                  to="/books"
+                  className="bg-purple-600 hover:bg-purple-700 p-4 rounded-lg text-left transition-colors"
+                >
+                  <h4 className="font-semibold mb-2">View All Books</h4>
+                  <p className="text-gray-300">
+                    Browse all books available on the platform
+                  </p>
+                </Link>
+                <Link
+                  to="/write_review"
+                  className="bg-green-600 hover:bg-green-700 p-4 rounded-lg text-left transition-colors"
+                >
                   <h4 className="font-semibold mb-2">Write Review</h4>
                   <p className="text-gray-300">Review a book you've read</p>
-                </button>
+                </Link>
               </div>
             </div>
 

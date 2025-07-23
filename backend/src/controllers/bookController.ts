@@ -70,10 +70,19 @@ export const getBookById = handleAsyncError(
         reviews: {
           include: {
             user: {
-              select: { name: true, email: true },
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                createdAt: true,
+              },
             },
           },
           orderBy: { createdAt: "desc" },
+          take: 5, // Limit to recent 5 reviews for the detail page
+        },
+        _count: {
+          select: { reviews: true },
         },
       },
     });
@@ -82,17 +91,46 @@ export const getBookById = handleAsyncError(
       throw createError("Book not found", 404);
     }
 
-    // Calculate average rating
-    const avgRating =
-      book.reviews.length > 0
-        ? book.reviews.reduce((sum, review) => sum + review.rating, 0) /
-          book.reviews.length
-        : 0;
+    // Calculate average rating and rating distribution
+    const [avgRatingResult, ratingDistribution] = await Promise.all([
+      prisma.review.aggregate({
+        where: { bookId: id },
+        _avg: {
+          rating: true,
+        },
+      }),
+      prisma.review.groupBy({
+        by: ["rating"],
+        where: { bookId: id },
+        _count: {
+          rating: true,
+        },
+        orderBy: {
+          rating: "desc",
+        },
+      }),
+    ]);
+
+    const averageRating = avgRatingResult._avg.rating
+      ? Math.round(avgRatingResult._avg.rating * 10) / 10
+      : 0;
 
     res.json({
       data: {
         ...book,
-        averageRating: Math.round(avgRating * 10) / 10,
+        averageRating,
+        reviewStats: {
+          totalReviews: book._count.reviews,
+          averageRating,
+          ratingDistribution: ratingDistribution.map((item) => ({
+            rating: item.rating,
+            count: item._count.rating,
+            percentage:
+              book._count.reviews > 0
+                ? Math.round((item._count.rating / book._count.reviews) * 100)
+                : 0,
+          })),
+        },
       },
     });
   }
@@ -234,5 +272,90 @@ export const getBooksByGenre = handleAsyncError(
       .sort((a, b) => b.count - a.count);
 
     res.json({ data: sortedGenres });
+  }
+);
+
+export const getBookReviews = handleAsyncError(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    // First verify the book exists
+    const book = await prisma.book.findUnique({
+      where: { id },
+      select: { id: true, title: true, author: true },
+    });
+
+    if (!book) {
+      throw createError("Book not found", 404);
+    }
+
+    // Get reviews with pagination
+    const [reviews, total] = await Promise.all([
+      prisma.review.findMany({
+        where: { bookId: id },
+        skip,
+        take: limit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              createdAt: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.review.count({
+        where: { bookId: id },
+      }),
+    ]);
+
+    // Calculate average rating
+    const avgRatingResult = await prisma.review.aggregate({
+      where: { bookId: id },
+      _avg: {
+        rating: true,
+      },
+    });
+
+    const averageRating = avgRatingResult._avg.rating
+      ? Math.round(avgRatingResult._avg.rating * 10) / 10
+      : 0;
+
+    // Calculate rating distribution
+    const ratingDistribution = await prisma.review.groupBy({
+      by: ["rating"],
+      where: { bookId: id },
+      _count: {
+        rating: true,
+      },
+      orderBy: {
+        rating: "desc",
+      },
+    });
+
+    res.json({
+      data: reviews,
+      book: book,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+      stats: {
+        totalReviews: total,
+        averageRating,
+        ratingDistribution: ratingDistribution.map((item) => ({
+          rating: item.rating,
+          count: item._count.rating,
+        })),
+      },
+    });
   }
 );

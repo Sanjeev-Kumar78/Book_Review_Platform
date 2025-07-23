@@ -75,7 +75,7 @@ const Login = () => {
               type="email"
               {...register("email")}
               placeholder="Email Address"
-              className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+              className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors text-gray-900 ${
                 errors.email
                   ? "border-red-500 focus:ring-red-500 bg-red-50"
                   : "border-gray-300 focus:ring-blue-500 bg-white"
@@ -94,7 +94,7 @@ const Login = () => {
               type="password"
               {...register("password")}
               placeholder="Password"
-              className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+              className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors text-gray-900 ${
                 errors.password
                   ? "border-red-500 focus:ring-red-500 bg-red-50"
                   : "border-gray-300 focus:ring-blue-500 bg-white"

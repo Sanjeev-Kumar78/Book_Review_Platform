@@ -96,7 +96,22 @@ export const validateCreateBook = [
     .withMessage("Each genre must be less than 50 characters"),
   body("published")
     .isISO8601()
-    .withMessage("Please provide a valid publication date"),
+    .withMessage("Please provide a valid publication date")
+    .custom((value) => {
+      const publishedDate = new Date(value);
+      const currentDate = new Date();
+      const earliestValidDate = new Date("1450-01-01"); // Gutenberg Bible era
+
+      if (publishedDate > currentDate) {
+        throw new Error("Publication date cannot be in the future");
+      }
+
+      if (publishedDate < earliestValidDate) {
+        throw new Error("Publication date cannot be before 1450");
+      }
+
+      return true;
+    }),
   handleValidationErrors,
 ];
 
@@ -124,14 +139,30 @@ export const validateUpdateBook = [
   body("published")
     .optional()
     .isISO8601()
-    .withMessage("Please provide a valid publication date"),
+    .withMessage("Please provide a valid publication date")
+    .custom((value) => {
+      if (!value) return true; // Skip validation if not provided
+
+      const publishedDate = new Date(value);
+      const currentDate = new Date();
+      const earliestValidDate = new Date("1450-01-01"); // Gutenberg Bible era
+
+      if (publishedDate > currentDate) {
+        throw new Error("Publication date cannot be in the future");
+      }
+
+      if (publishedDate < earliestValidDate) {
+        throw new Error("Publication date cannot be before 1450");
+      }
+
+      return true;
+    }),
   handleValidationErrors,
 ];
 
 // Review validation rules
 export const validateCreateReview = [
   body("bookId").isString().withMessage("Book ID is required"),
-  body("userId").isString().withMessage("User ID is required"),
   body("rating")
     .isFloat({ min: 1, max: 5 })
     .withMessage("Rating must be between 1 and 5"),
