@@ -8,7 +8,7 @@ project:
 services:
   backend:
     source: "./backend"
-    builder: "nixpacks"
+    builder: "dockerfile"
     environment:
       NODE_ENV: "production"
       PORT: "$PORT"
@@ -24,7 +24,7 @@ services:
 
   frontend:
     source: "./frontend"
-    builder: "nixpacks"
+    builder: "dockerfile"
     environment:
       NODE_ENV: "production"
       PORT: "$PORT"
