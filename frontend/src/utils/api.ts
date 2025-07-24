@@ -3,6 +3,11 @@ import axios from "axios";
 
 // Determine the API base URL based on environment
 const getApiBaseUrl = () => {
+  // If we're in development mode, use localhost
+  if (import.meta.env.DEV) {
+    return "http://localhost:3001/api";
+  }
+
   // In production, use the environment variable or try to detect Railway URL
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
   if (envUrl) {

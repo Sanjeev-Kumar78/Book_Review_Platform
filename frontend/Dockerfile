@@ -19,7 +19,11 @@ COPY index.html ./
 COPY src ./src
 COPY server.js ./
 
-# Build the application
+# Accept build-time environment variables
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
+# Build the application with environment variables
 RUN npm run build
 
 # Expose port (Railway will set the PORT environment variable)
