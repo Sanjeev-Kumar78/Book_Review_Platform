@@ -2,13 +2,9 @@
 
 # Build Configuration
 [build]
-builder = "nixpacks"
-
-# Start Command
-[deploy]
-startCommand = "npm run preview -- --host 0.0.0.0 --port $PORT"
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
 
 # Environment Variables
 [env]
 NODE_ENV = "production"
-PORT = "$PORT"

@@ -18,8 +18,8 @@ COPY . .
 # Generate Prisma client and build TypeScript
 RUN npm run build
 
-# Expose port (Railway will set PORT environment variable)
-EXPOSE $PORT
+# Expose port (Railway will provide the PORT environment variable)
+EXPOSE 3001
 
 # Start the application
 CMD [ "npm", "run", "start" ]

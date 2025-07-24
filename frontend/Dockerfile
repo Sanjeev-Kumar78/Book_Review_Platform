@@ -15,7 +15,8 @@ COPY . .
 # Build the application
 RUN npm run build
 
+# Expose port (Railway will set the PORT environment variable)
 EXPOSE 4173
 
-# Start the application with proper host binding
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "4173"]
+# Start the application using our server.js script
+CMD ["npm", "start"]

@@ -2,15 +2,14 @@
 
 # Build Configuration
 [build]
-builder = "nixpacks"
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
 
-# Start Command
+# Start Command (handled by Dockerfile)
 [deploy]
-startCommand = "npm run start"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 300
 
 # Environment Variables
 [env]
 NODE_ENV = "production"
-PORT = "$PORT"
