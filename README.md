@@ -176,7 +176,7 @@ PORT=3001
 DATABASE_URL=postgresql://book_review_user:book_review_password@localhost:5432/book_reviews_platform
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 JWT_EXPIRES_IN=7d
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:4173
 ```
 
 #### Frontend (.env)
@@ -219,43 +219,25 @@ The application uses PostgreSQL with the following main entities:
 - `PUT /api/reviews/:id` - Update review (authenticated)
 - `DELETE /api/reviews/:id` - Delete review (authenticated)
 
-## 🐳 Docker Commands
-
-```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop all services
-docker-compose down
-
-# Rebuild and start
-docker-compose up --build -d
-
-# Run database migrations
-docker-compose exec backend npx prisma migrate deploy
-
-# Access database
-docker-compose exec postgres psql -U book_review_user -d book_reviews_platform
-```
-
 ## 🧪 Testing
 
 ### Backend Testing
 
 ```bash
 cd backend
-npm test
+docker-compose up --build -d
 ```
+
+Go to http://localhost:3001/api to access the backend API.
 
 ### Frontend Testing
 
 ```bash
 cd frontend
-npm test
+docker-compose up --build -d
 ```
+
+Go to http://localhost:4173 to access the frontend.
 
 ## 📈 Performance Features
 
@@ -276,56 +258,14 @@ npm test
 
 ## 🚀 Deployment
 
-### Railway Deployment (Recommended)
-
-For easy deployment to Railway, see the detailed guide: [RAILWAY_DEPLOYMENT_SETUP.md](./RAILWAY_DEPLOYMENT_SETUP.md)
-
-**Quick Steps:**
-
-1. Deploy backend to Railway (set JWT_SECRET, DATABASE_URL)
-2. Deploy frontend to Railway (set VITE_API_URL)
-3. Update CORS settings with frontend URL
-
-### Production Deployment (Alternative)
-
-1. **Set production environment variables**
-2. **Configure secure JWT secrets**
-3. **Set up SSL certificates**
-4. **Configure production database**
-5. **Deploy using Docker Compose**
+This application can be deployed on various platforms, including Railway, Docker, and VPS. The recommended deployment method is using Railway for simplicity.
 
 ### Environment-specific Configurations
 
 - **Development**: Hot reloading, detailed logging
 - **Production**: Optimized builds, security headers, compression
 
-## 🌐 Deployment
-
-### Railway Deployment
-
-This project is configured for easy deployment on Railway. See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for detailed instructions.
-
-**Quick Deploy:**
-
-1. **Install Railway CLI:**
-
-   ```bash
-   npm install -g @railway/cli
-   railway login
-   ```
-
-2. **Deploy using the helper script:**
-
-   ```bash
-   # For Unix/Linux/Mac
-   chmod +x deploy-railway.sh
-   ./deploy-railway.sh
-
-   # For Windows PowerShell
-   .\deploy-railway.ps1
-   ```
-
-3. **Manual deployment steps:**
+1. **Manual deployment steps:**
    - Create Railway project
    - Deploy backend service with PostgreSQL database
    - Deploy frontend service
@@ -333,7 +273,7 @@ This project is configured for easy deployment on Railway. See [RAILWAY_DEPLOYME
    - Update CORS settings
 
 **Environment Variables:**
-
+Given in `.env.example` files for both backend and frontend.
 Backend:
 
 - `DATABASE_URL`: PostgreSQL connection string
@@ -347,6 +287,7 @@ Frontend:
 ### Other Deployment Options
 
 - **Docker**: Use the provided Dockerfiles
+- **Render**: Deploy backend and frontend with Docker support
 - **Vercel/Netlify**: Frontend can be deployed to static hosting
 - **Heroku**: Compatible with minor configuration changes
 - **VPS**: Use Docker Compose for self-hosting
