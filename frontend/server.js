@@ -1,30 +1,33 @@
-import { spawn } from 'child_process';
+import express from 'express';
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const app = express();
 const port = process.env.PORT || 4173;
-const host = '0.0.0.0';
 
-console.log(`Starting Vite preview server on ${host}:${port}`);
+// Serve static files from the dist directory
+app.use(express.static(join(__dirname, 'dist')));
 
-const child = spawn('npx', ['vite', 'preview', '--host', host, '--port', port], {
-    stdio: 'inherit'
+// Handle client-side routing - send all non-API requests to index.html
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
-child.on('error', (error) => {
-    console.error('Error starting server:', error);
-    process.exit(1);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Frontend server running on http://0.0.0.0:${port}`);
 });
 
-child.on('close', (code) => {
-    console.log(`Server process exited with code ${code}`);
-    process.exit(code);
-});
-
+// Graceful shutdown
 process.on('SIGINT', () => {
-    console.log('Received SIGINT, shutting down gracefully...');
-    child.kill('SIGINT');
+  console.log('Received SIGINT, shutting down gracefully...');
+  process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-    console.log('Received SIGTERM, shutting down gracefully...');
-    child.kill('SIGTERM');
+  console.log('Received SIGTERM, shutting down gracefully...');
+  process.exit(0);
 });
