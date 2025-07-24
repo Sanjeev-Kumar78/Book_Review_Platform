@@ -3,7 +3,7 @@
 # Build Configuration
 [build]
 builder = "dockerfile"
-dockerfilePath = "Dockerfile"
+dockerfilePath = "./Dockerfile"
 
 # Start Command (handled by Dockerfile)
 [deploy]
