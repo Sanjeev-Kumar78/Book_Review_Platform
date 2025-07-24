@@ -34,8 +34,8 @@ A modern, full-stack book review platform built with React, Node.js, TypeScript,
 ### DevOps
 
 - **Docker & Docker Compose** for containerization
+- **Railway** for cloud deployment
 - **Nginx** for serving frontend
-- **Redis** for caching (optional)
 
 ## 🚀 Quick Start
 
@@ -53,23 +53,22 @@ A modern, full-stack book review platform built with React, Node.js, TypeScript,
    cd Book_Review_Platform
    ```
 
-2. **Run the deployment script**
-
-   For Linux/Mac:
+2. **Run the App**
 
    ```bash
-   chmod +x deploy.sh
-   ./deploy.sh
+   cd backend/
+   docker-compose up --build
    ```
 
-   For Windows:
-
-   ```cmd
-   deploy.bat
+   ```bash
+   cd frontend/
+   docker-compose up --build
    ```
+
+   This command will build the Docker images and start the services defined in `docker-compose.yml`.
 
 3. **Access the application**
-   - Frontend: http://localhost:3000
+   - Frontend: http://localhost:4173
    - Backend API: http://localhost:3001
    - Database: localhost:5432
 
@@ -299,6 +298,58 @@ For easy deployment to Railway, see the detailed guide: [RAILWAY_DEPLOYMENT_SETU
 
 - **Development**: Hot reloading, detailed logging
 - **Production**: Optimized builds, security headers, compression
+
+## 🌐 Deployment
+
+### Railway Deployment
+
+This project is configured for easy deployment on Railway. See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for detailed instructions.
+
+**Quick Deploy:**
+
+1. **Install Railway CLI:**
+
+   ```bash
+   npm install -g @railway/cli
+   railway login
+   ```
+
+2. **Deploy using the helper script:**
+
+   ```bash
+   # For Unix/Linux/Mac
+   chmod +x deploy-railway.sh
+   ./deploy-railway.sh
+
+   # For Windows PowerShell
+   .\deploy-railway.ps1
+   ```
+
+3. **Manual deployment steps:**
+   - Create Railway project
+   - Deploy backend service with PostgreSQL database
+   - Deploy frontend service
+   - Configure environment variables
+   - Update CORS settings
+
+**Environment Variables:**
+
+Backend:
+
+- `DATABASE_URL`: PostgreSQL connection string
+- `JWT_SECRET`: Secret key for JWT tokens
+- `FRONTEND_URL`: URL of deployed frontend
+
+Frontend:
+
+- `VITE_API_URL`: URL of deployed backend API
+
+### Other Deployment Options
+
+- **Docker**: Use the provided Dockerfiles
+- **Vercel/Netlify**: Frontend can be deployed to static hosting
+- **Heroku**: Compatible with minor configuration changes
+- **VPS**: Use Docker Compose for self-hosting
 
 ## 🤝 Contributing
 

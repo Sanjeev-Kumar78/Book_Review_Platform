@@ -1,0 +1,14 @@
+# Railway Frontend Configuration
+
+# Build Configuration
+[build]
+builder = "nixpacks"
+
+# Start Command
+[deploy]
+startCommand = "npm run preview -- --host 0.0.0.0 --port $PORT"
+
+# Environment Variables
+[env]
+NODE_ENV = "production"
+PORT = "$PORT"

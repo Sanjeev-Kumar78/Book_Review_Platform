@@ -1,0 +1,16 @@
+# Railway Backend Configuration
+
+# Build Configuration
+[build]
+builder = "nixpacks"
+
+# Start Command
+[deploy]
+startCommand = "npm run start"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+
+# Environment Variables
+[env]
+NODE_ENV = "production"
+PORT = "$PORT"

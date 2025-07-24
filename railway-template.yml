@@ -1,0 +1,42 @@
+# Railway Project Template
+# This file can be used as a reference for setting up the Railway project
+
+project:
+  name: "book-review-platform"
+  description: "A modern book review platform with React frontend and Node.js backend"
+
+services:
+  backend:
+    source: "./backend"
+    builder: "nixpacks"
+    environment:
+      NODE_ENV: "production"
+      PORT: "$PORT"
+    healthcheck:
+      path: "/api/health"
+      timeout: 300
+    variables:
+      # These need to be set manually in Railway dashboard
+      # DATABASE_URL: "postgresql://..."
+      # JWT_SECRET: "your-secret-key"
+      # JWT_EXPIRES_IN: "7d"
+      # FRONTEND_URL: "https://your-frontend.railway.app"
+
+  frontend:
+    source: "./frontend"
+    builder: "nixpacks"
+    environment:
+      NODE_ENV: "production"
+      PORT: "$PORT"
+    variables:
+      # This needs to be set manually in Railway dashboard
+      # VITE_API_URL: "https://your-backend.railway.app/api"
+
+  database:
+    image: "postgres:15"
+    environment:
+      POSTGRES_DB: "book_reviews"
+      POSTGRES_USER: "$POSTGRES_USER"
+      POSTGRES_PASSWORD: "$POSTGRES_PASSWORD"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
