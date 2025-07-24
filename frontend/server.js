@@ -14,20 +14,20 @@ app.use(express.static(join(__dirname, 'dist')));
 
 // Handle client-side routing - send all non-API requests to index.html
 app.get('*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist', 'index.html'));
+    res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(port, '0.0.0.0', () => {
-  console.log(`Frontend server running on http://0.0.0.0:${port}`);
+    console.log(`Frontend server running on http://0.0.0.0:${port}`);
 });
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('Received SIGINT, shutting down gracefully...');
-  process.exit(0);
+    console.log('Received SIGINT, shutting down gracefully...');
+    process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  console.log('Received SIGTERM, shutting down gracefully...');
-  process.exit(0);
+    console.log('Received SIGTERM, shutting down gracefully...');
+    process.exit(0);
 });

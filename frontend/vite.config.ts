@@ -7,12 +7,12 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   preview: {
     port: 4173,
-    host: '0.0.0.0', // Allow external connections from any host
+    host: "0.0.0.0", // Allow external connections from any host
     strictPort: true,
   },
   server: {
     port: 3000,
-    host: '0.0.0.0', // Allow external connections from any host
+    host: "0.0.0.0", // Allow external connections from any host
   },
   build: {
     outDir: "dist",

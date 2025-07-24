@@ -9,10 +9,14 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy files needed for the build
-COPY . .
+# Copy configuration files
+COPY tsconfig*.json ./
+COPY vite.config.ts ./
+COPY eslint.config.js ./
+COPY index.html ./
 
-# Copy server.js for production
+# Copy source code and server file
+COPY src ./src
 COPY server.js ./
 
 # Build the application
