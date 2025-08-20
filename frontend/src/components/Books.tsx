@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
+import { useNavigate, Link } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import bookService, {
   type Book,
@@ -14,6 +15,7 @@ const Books = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const fetchBooks = async (page = 1, search = "") => {
     try {
@@ -64,7 +66,7 @@ const Books = () => {
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   const formatDate = (dateString: string) => {
@@ -96,21 +98,21 @@ const Books = () => {
             </div>
             <div className="flex items-center space-x-4">
               <nav className="hidden md:flex space-x-6">
-                <a
-                  href="/dashboard"
+                <Link
+                  to="/dashboard"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Dashboard
-                </a>
-                <a href="/books" className="text-white font-semibold">
+                </Link>
+                <Link to="/books" className="text-white font-semibold">
                   Books
-                </a>
-                <a
-                  href="/add_book"
+                </Link>
+                <Link
+                  to="/add_book"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Add Book
-                </a>
+                </Link>
               </nav>
               <div className="flex items-center space-x-3">
                 <span className="text-gray-300">Welcome, {user?.name}!</span>
@@ -161,12 +163,12 @@ const Books = () => {
 
         {/* Add Book Button */}
         <div className="mb-8">
-          <a
-            href="/add_book"
+          <Link
+            to="/add_book"
             className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors inline-block"
           >
             + Add New Book
-          </a>
+          </Link>
         </div>
 
         {/* Loading State */}
@@ -187,12 +189,12 @@ const Books = () => {
                     ? "Try adjusting your search terms"
                     : "Be the first to add a book to the platform!"}
                 </p>
-                <a
-                  href="/add_book"
+                <Link
+                  to="/add_book"
                   className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors"
                 >
                   Add First Book
-                </a>
+                </Link>
               </div>
             ) : (
               <>
@@ -228,12 +230,12 @@ const Books = () => {
                         <p>Reviews: {book._count.reviews}</p>
                       </div>
                       <div className="flex gap-2">
-                        <a
-                          href={`/books/${book.id}`}
+                        <Link
+                          to={`/books/${book.id}`}
                           className="flex-1 bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded-lg text-sm font-semibold transition-colors text-center"
                         >
                           View Details
-                        </a>
+                        </Link>
                         <button className="bg-green-600 hover:bg-green-700 py-2 px-4 rounded-lg text-sm font-semibold transition-colors">
                           Review
                         </button>

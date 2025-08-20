@@ -1,14 +1,15 @@
 // src/components/Dashboard.tsx
 import React from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   return (

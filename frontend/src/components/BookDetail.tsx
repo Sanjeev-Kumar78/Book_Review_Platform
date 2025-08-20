@@ -1,6 +1,6 @@
 // src/components/BookDetail.tsx
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import bookService, { type Book } from "../services/bookService";
@@ -18,6 +18,7 @@ const BookDetail = () => {
     rating: 5,
     comment: "",
   });
+  const navigate = useNavigate();
   const [submittingReview, setSubmittingReview] = useState(false);
   const { user, logout } = useAuth();
 
@@ -76,7 +77,7 @@ const BookDetail = () => {
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   const handleWriteReview = () => {
@@ -165,12 +166,12 @@ const BookDetail = () => {
       <div className="min-h-screen bg-gray-900 text-white flex justify-center items-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Book not found</h2>
-          <a
-            href="/books"
+          <Link
+            to="/books"
             className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors"
           >
             Back to Books
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -200,24 +201,24 @@ const BookDetail = () => {
             </div>
             <div className="flex items-center space-x-4">
               <nav className="hidden md:flex space-x-6">
-                <a
-                  href="/dashboard"
+                <Link
+                  to="/dashboard"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Dashboard
-                </a>
-                <a
-                  href="/books"
+                </Link>
+                <Link
+                  to="/books"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Books
-                </a>
-                <a
-                  href="/add_book"
+                </Link>
+                <Link
+                  to="/add_book"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Add Book
-                </a>
+                </Link>
               </nav>
               <div className="flex items-center space-x-3">
                 <span className="text-gray-300">Welcome, {user?.name}!</span>
@@ -240,12 +241,12 @@ const BookDetail = () => {
           <div className="lg:col-span-2">
             <div className="bg-gray-800 rounded-lg p-8 shadow-lg">
               <div className="mb-6">
-                <a
-                  href="/books"
+                <Link
+                  to="/books"
                   className="text-blue-400 hover:text-blue-300 transition-colors"
                 >
                   ← Back to Books
-                </a>
+                </Link>
               </div>
 
               <h1 className="text-4xl font-bold mb-4">{book.title}</h1>

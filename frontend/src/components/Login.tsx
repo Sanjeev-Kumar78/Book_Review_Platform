@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { toast, ToastContainer } from "react-toastify";
+import { useNavigate, Link } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { loginSchema, type LoginFormData } from "../utils/validationSchemas";
 import authService from "../services/authService";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -27,7 +29,7 @@ const Login = () => {
         toast.success(response.message || "Login successful!");
         // Redirect to dashboard or home page
         setTimeout(() => {
-          window.location.href = "/dashboard"; // or use react-router navigate
+          navigate("/dashboard");
         }, 1500);
       }
     } catch (error: unknown) {
@@ -124,22 +126,22 @@ const Login = () => {
         <div className="mt-6 text-center">
           <p className="text-gray-400">
             Don't have an account?{" "}
-            <a
-              href="/signup"
+            <Link
+              to="/signup"
               className="text-blue-400 hover:text-blue-300 font-medium"
             >
               Sign up
-            </a>
+            </Link>
           </p>
         </div>
 
         <div className="mt-4 text-center">
-          <a
-            href="/forgot-password"
+          <Link
+            to="/forgot-password"
             className="text-sm text-gray-400 hover:text-gray-300"
           >
             Forgot your password?
-          </a>
+          </Link>
         </div>
       </div>
     </div>

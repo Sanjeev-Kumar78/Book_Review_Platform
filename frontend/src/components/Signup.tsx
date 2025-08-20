@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { toast, ToastContainer } from "react-toastify";
+import { useNavigate, Link } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import {
   registerSchema,
@@ -11,6 +12,7 @@ import authService from "../services/authService";
 
 const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -32,7 +34,7 @@ const Signup = () => {
         toast.success(response.message || "Registration successful!");
         // Redirect to dashboard or home page
         setTimeout(() => {
-          window.location.href = "/dashboard"; // or use react-router navigate
+          navigate("/dashboard");
         }, 1500);
       }
     } catch (error: unknown) {
@@ -169,25 +171,25 @@ const Signup = () => {
         <div className="mt-6 text-center">
           <p className="text-gray-400">
             Already have an account?{" "}
-            <a
-              href="/login"
+            <Link
+              to="/login"
               className="text-blue-400 hover:text-blue-300 font-medium"
             >
               Sign in
-            </a>
+            </Link>
           </p>
         </div>
 
         <div className="mt-4 text-center">
           <p className="text-xs text-gray-500">
             By signing up, you agree to our{" "}
-            <a href="/terms" className="text-blue-400 hover:text-blue-300">
+            <Link to="/terms" className="text-blue-400 hover:text-blue-300">
               Terms of Service
-            </a>{" "}
+            </Link>{" "}
             and{" "}
-            <a href="/privacy" className="text-blue-400 hover:text-blue-300">
+            <Link to="/privacy" className="text-blue-400 hover:text-blue-300">
               Privacy Policy
-            </a>
+            </Link>
           </p>
         </div>
       </div>

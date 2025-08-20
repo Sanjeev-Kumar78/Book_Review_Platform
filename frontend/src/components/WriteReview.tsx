@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
+import { useNavigate, Link } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import bookService, { type Book } from "../services/bookService";
 import reviewService from "../services/reviewService";
@@ -18,6 +19,7 @@ const WriteReview = () => {
   const [booksLoading, setBooksLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -95,7 +97,7 @@ const WriteReview = () => {
 
       // Redirect to books page after 2 seconds
       setTimeout(() => {
-        window.location.href = "/books";
+        navigate("/books");
       }, 2000);
     } catch (error: unknown) {
       interface ApiError {
@@ -124,7 +126,7 @@ const WriteReview = () => {
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   const renderStars = (rating: number, interactive = false) => {
@@ -170,27 +172,27 @@ const WriteReview = () => {
             </div>
             <div className="flex items-center space-x-4">
               <nav className="hidden md:flex space-x-6">
-                <a
-                  href="/dashboard"
+                <Link
+                  to="/dashboard"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Dashboard
-                </a>
-                <a
-                  href="/books"
+                </Link>
+                <Link
+                  to="/books"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Books
-                </a>
-                <a
-                  href="/add_book"
+                </Link>
+                <Link
+                  to="/add_book"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Add Book
-                </a>
-                <a href="/write_review" className="text-white font-semibold">
+                </Link>
+                <Link to="/write_review" className="text-white font-semibold">
                   Write Review
-                </a>
+                </Link>
               </nav>
               <div className="flex items-center space-x-3">
                 <span className="text-gray-300">Welcome, {user?.name}!</span>
@@ -314,12 +316,12 @@ const WriteReview = () => {
                 {isLoading ? "Submitting Review..." : "Submit Review"}
               </button>
 
-              <a
-                href="/books"
+              <Link
+                to="/books"
                 className="bg-gray-600 hover:bg-gray-700 px-6 py-3 rounded-lg font-semibold transition-colors text-center"
               >
                 Cancel
-              </a>
+              </Link>
             </div>
           </form>
         </div>

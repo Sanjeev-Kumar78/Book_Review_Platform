@@ -80,12 +80,12 @@ const App = () => {
               <div className="text-center">
                 <h1 className="text-6xl font-bold mb-4">404</h1>
                 <p className="text-xl text-gray-300 mb-8">Page Not Found</p>
-                <a
-                  href="/"
+                <Link
+                  to="/"
                   className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors"
                 >
                   Go Home
-                </a>
+                </Link>
               </div>
             </div>
           }
