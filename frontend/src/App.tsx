@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
@@ -12,6 +12,8 @@ const App = () => {
   return (
     <AuthProvider>
       <Routes>
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
         <Route
           path="/"
           element={
@@ -23,24 +25,22 @@ const App = () => {
                 Discover, Review, and Share Great Books
               </p>
               <div className="space-x-4">
-                <a
-                  href="/login"
+                <Link
+                  to="/login"
                   className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors"
                 >
                   Login
-                </a>
-                <a
-                  href="/signup"
+                </Link>
+                <Link
+                  to="/signup"
                   className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors"
                 >
                   Sign Up
-                </a>
+                </Link>
               </div>
             </div>
           }
         />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
         <Route
           path="/dashboard"
           element={
