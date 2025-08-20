@@ -22,21 +22,23 @@ dotenv.config();
 const app = express();
 
 // Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
     },
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
-}));
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  })
+);
 
 // Rate limiting - more strict for authentication endpoints
 const authLimiter = rateLimit({
@@ -60,7 +62,7 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use('/api/auth', authLimiter);
+app.use("/api/auth", authLimiter);
 app.use(limiter);
 
 // Logging middleware
@@ -68,10 +70,58 @@ app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 // Body parsing middleware
 app.use(compression());
+
+// CORS configuration with multiple allowed origins
+const getAllowedOrigins = () => {
+  const origins = [];
+
+  // Add primary frontend URL
+  if (process.env.FRONTEND_URL) {
+    origins.push(process.env.FRONTEND_URL);
+  }
+
+  // Add additional origins from environment variable
+  if (process.env.ALLOWED_ORIGINS) {
+    const additionalOrigins = process.env.ALLOWED_ORIGINS.split(",").map(
+      (origin) => origin.trim()
+    );
+    origins.push(...additionalOrigins);
+  }
+
+  // Add default development origins if no environment origins are set
+  if (origins.length === 0) {
+    origins.push("http://localhost:3000", "http://localhost:5173");
+  }
+
+  return [...new Set(origins)]; // Remove duplicates
+};
+
+const allowedOrigins = getAllowedOrigins();
+
+// Debug logging for environment
+console.log("🔧 Server Configuration:");
+console.log(`- Environment: ${process.env.NODE_ENV}`);
+console.log(`- Frontend URL: ${process.env.FRONTEND_URL}`);
+console.log(`- Port: ${process.env.PORT}`);
+console.log(`- Allowed Origins: ${allowedOrigins.join(", ")}`);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log(`CORS blocked origin: ${origin}`);
+      return callback(new Error("Not allowed by CORS"), false);
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    optionsSuccessStatus: 200, // For legacy browser support
   })
 );
 app.use(express.json({ limit: "10mb" }));
