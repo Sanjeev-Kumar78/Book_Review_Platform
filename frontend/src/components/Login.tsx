@@ -5,11 +5,12 @@ import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { loginSchema, type LoginFormData } from "../utils/validationSchemas";
-import authService from "../services/authService";
+import { useAuth } from "../contexts/AuthContext";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const {
     register,
@@ -23,15 +24,12 @@ const Login = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      const response = await authService.login(data);
-
-      if (response.success) {
-        toast.success(response.message || "Login successful!");
-        // Redirect to dashboard or home page
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 1500);
-      }
+      await login(data.email, data.password);
+      toast.success("Login successful!");
+      // Redirect to dashboard or home page
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1500);
     } catch (error: unknown) {
       interface ApiError {
         response?: {

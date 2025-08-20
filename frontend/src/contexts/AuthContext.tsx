@@ -13,6 +13,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -55,6 +56,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authService.login({ email, password });
       if (response.success) {
         setUser(response.data.user);
+      } else {
+        throw new Error(response.message || "Login failed");
       }
     } finally {
       setIsLoading(false);
@@ -67,6 +70,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authService.register({ name, email, password });
       if (response.success) {
         setUser(response.data.user);
+      } else {
+        throw new Error(response.message || "Registration failed");
       }
     } finally {
       setIsLoading(false);

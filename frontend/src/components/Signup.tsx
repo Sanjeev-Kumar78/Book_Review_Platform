@@ -8,11 +8,12 @@ import {
   registerSchema,
   type RegisterFormData,
 } from "../utils/validationSchemas";
-import authService from "../services/authService";
+import { useAuth } from "../contexts/AuthContext";
 
 const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { register: registerUser } = useAuth();
 
   const {
     register,
@@ -28,15 +29,16 @@ const Signup = () => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword: _, ...registerData } = data;
-      const response = await authService.register(registerData);
-
-      if (response.success) {
-        toast.success(response.message || "Registration successful!");
-        // Redirect to dashboard or home page
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 1500);
-      }
+      await registerUser(
+        registerData.name,
+        registerData.email,
+        registerData.password
+      );
+      toast.success("Registration successful!");
+      // Redirect to dashboard or home page
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1500);
     } catch (error: unknown) {
       interface ApiError {
         response?: {
